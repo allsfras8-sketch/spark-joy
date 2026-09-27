@@ -18,10 +18,12 @@ export type Database = {
         Row: {
           code: string
           created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
           id: string
           is_active: boolean
           is_group: boolean
           name: string
+          nature: Database["public"]["Enums"]["account_nature"]
           notes: string | null
           parent_id: string | null
           tenant_id: string
@@ -29,10 +31,12 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           id?: string
           is_active?: boolean
           is_group?: boolean
           name: string
+          nature?: Database["public"]["Enums"]["account_nature"]
           notes?: string | null
           parent_id?: string | null
           tenant_id: string
@@ -40,10 +44,12 @@ export type Database = {
         Update: {
           code?: string
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           id?: string
           is_active?: boolean
           is_group?: boolean
           name?: string
+          nature?: Database["public"]["Enums"]["account_nature"]
           notes?: string | null
           parent_id?: string | null
           tenant_id?: string
@@ -107,6 +113,7 @@ export type Database = {
           account_no: string | null
           branch: string | null
           created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
           id: string
           name: string
           tenant_id: string
@@ -116,6 +123,7 @@ export type Database = {
           account_no?: string | null
           branch?: string | null
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           id?: string
           name: string
           tenant_id: string
@@ -125,6 +133,7 @@ export type Database = {
           account_no?: string | null
           branch?: string | null
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           id?: string
           name?: string
           tenant_id?: string
@@ -200,6 +209,7 @@ export type Database = {
           bank_id: string | null
           cheque_no: string
           created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
           direction: string
           due_date: string
           id: string
@@ -214,6 +224,7 @@ export type Database = {
           bank_id?: string | null
           cheque_no: string
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           direction?: string
           due_date?: string
           id?: string
@@ -228,6 +239,7 @@ export type Database = {
           bank_id?: string | null
           cheque_no?: string
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           direction?: string
           due_date?: string
           id?: string
@@ -319,6 +331,7 @@ export type Database = {
           amount: number
           created_at: string
           created_by: string | null
+          currency: Database["public"]["Enums"]["currency_code"]
           doc_date: string
           doc_no: number | null
           doc_type: string
@@ -338,6 +351,7 @@ export type Database = {
           amount?: number
           created_at?: string
           created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_code"]
           doc_date?: string
           doc_no?: number | null
           doc_type: string
@@ -357,6 +371,7 @@ export type Database = {
           amount?: number
           created_at?: string
           created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_code"]
           doc_date?: string
           doc_no?: number | null
           doc_type?: string
@@ -425,18 +440,21 @@ export type Database = {
       }
       exchange_rates: {
         Row: {
+          currency: Database["public"]["Enums"]["currency_code"]
           id: string
           rate_date: string
           rate_to_usd: number
           tenant_id: string
         }
         Insert: {
+          currency?: Database["public"]["Enums"]["currency_code"]
           id?: string
           rate_date?: string
           rate_to_usd: number
           tenant_id: string
         }
         Update: {
+          currency?: Database["public"]["Enums"]["currency_code"]
           id?: string
           rate_date?: string
           rate_to_usd?: number
@@ -458,6 +476,7 @@ export type Database = {
           code: string | null
           cost: number
           created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
           id: string
           name: string
           notes: string | null
@@ -471,6 +490,7 @@ export type Database = {
           code?: string | null
           cost: number
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           id?: string
           name: string
           notes?: string | null
@@ -484,6 +504,7 @@ export type Database = {
           code?: string | null
           cost?: number
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           id?: string
           name?: string
           notes?: string | null
@@ -513,6 +534,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          currency: Database["public"]["Enums"]["currency_code"]
           description: string | null
           doc_type: string
           document_id: string | null
@@ -525,6 +547,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_code"]
           description?: string | null
           doc_type?: string
           document_id?: string | null
@@ -537,6 +560,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_code"]
           description?: string | null
           doc_type?: string
           document_id?: string | null
@@ -695,6 +719,7 @@ export type Database = {
           barcode: string | null
           category: string | null
           created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
           default_warehouse_id: string | null
           id: string
           is_active: boolean
@@ -711,6 +736,7 @@ export type Database = {
           barcode?: string | null
           category?: string | null
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           default_warehouse_id?: string | null
           id?: string
           is_active?: boolean
@@ -727,6 +753,7 @@ export type Database = {
           barcode?: string | null
           category?: string | null
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           default_warehouse_id?: string | null
           id?: string
           is_active?: boolean
@@ -801,6 +828,7 @@ export type Database = {
           account_id: string | null
           amount: number
           created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
           description: string
           expense_date: string
           id: string
@@ -811,6 +839,7 @@ export type Database = {
           account_id?: string | null
           amount: number
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           description: string
           expense_date?: string
           id?: string
@@ -821,6 +850,7 @@ export type Database = {
           account_id?: string | null
           amount?: number
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           description?: string
           expense_date?: string
           id?: string
@@ -909,6 +939,7 @@ export type Database = {
           completion_pct: number
           contract_value: number
           created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
           end_date: string | null
           id: string
           is_active: boolean
@@ -924,6 +955,7 @@ export type Database = {
           completion_pct?: number
           contract_value?: number
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           end_date?: string | null
           id?: string
           is_active?: boolean
@@ -939,6 +971,7 @@ export type Database = {
           completion_pct?: number
           contract_value?: number
           created_at?: string
+          currency?: Database["public"]["Enums"]["currency_code"]
           end_date?: string | null
           id?: string
           is_active?: boolean
@@ -1170,6 +1203,8 @@ export type Database = {
           cogs_account_id: string | null
           customers_account_id: string | null
           inventory_account_id: string | null
+          logo_url: string | null
+          primary_color: string | null
           project_cost_account_id: string | null
           sales_account_id: string | null
           suppliers_account_id: string | null
@@ -1181,6 +1216,8 @@ export type Database = {
           cogs_account_id?: string | null
           customers_account_id?: string | null
           inventory_account_id?: string | null
+          logo_url?: string | null
+          primary_color?: string | null
           project_cost_account_id?: string | null
           sales_account_id?: string | null
           suppliers_account_id?: string | null
@@ -1192,6 +1229,8 @@ export type Database = {
           cogs_account_id?: string | null
           customers_account_id?: string | null
           inventory_account_id?: string | null
+          logo_url?: string | null
+          primary_color?: string | null
           project_cost_account_id?: string | null
           sales_account_id?: string | null
           suppliers_account_id?: string | null
@@ -1411,7 +1450,8 @@ export type Database = {
       unpost_document: { Args: { _id: string }; Returns: undefined }
     }
     Enums: {
-      account_nature: "debit" | "credit"
+      account_nature: "closing" | "balance_sheet" | "profit_loss"
+      account_nature_old: "debit" | "credit"
       currency_code: "USD" | "SYP"
       perm_action: "view" | "create" | "edit" | "delete"
     }
@@ -1541,7 +1581,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      account_nature: ["debit", "credit"],
+      account_nature: ["closing", "balance_sheet", "profit_loss"],
+      account_nature_old: ["debit", "credit"],
       currency_code: ["USD", "SYP"],
       perm_action: ["view", "create", "edit", "delete"],
     },

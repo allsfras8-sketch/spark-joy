@@ -78,6 +78,13 @@
       "when": 1790510552630,
       "tag": "0010_restore_enums_has_perm_and_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790510849889,
+      "tag": "0011_restore_currency_and_fix_project_posting",
+      "breakpoints": true
     }
   ]
 }
