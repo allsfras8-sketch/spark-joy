@@ -1398,13 +1398,22 @@ export type Database = {
     Functions: {
       claim_super_admin: { Args: never; Returns: boolean }
       current_tenant_id: { Args: never; Returns: string }
+      has_perm: {
+        Args: {
+          _action: Database["public"]["Enums"]["perm_action"]
+          _module: string
+        }
+        Returns: boolean
+      }
       is_super_admin: { Args: never; Returns: boolean }
       post_document: { Args: { _id: string }; Returns: string }
       tenant_active: { Args: never; Returns: boolean }
       unpost_document: { Args: { _id: string }; Returns: undefined }
     }
     Enums: {
-      [_ in never]: never
+      account_nature: "debit" | "credit"
+      currency_code: "USD" | "SYP"
+      perm_action: "view" | "create" | "edit" | "delete"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1531,6 +1540,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      account_nature: ["debit", "credit"],
+      currency_code: ["USD", "SYP"],
+      perm_action: ["view", "create", "edit", "delete"],
+    },
   },
 } as const

@@ -71,6 +71,13 @@
       "when": 1790510413845,
       "tag": "0009_cleanup_leftover_types",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790510552630,
+      "tag": "0010_restore_enums_has_perm_and_policies",
+      "breakpoints": true
     }
   ]
 }
