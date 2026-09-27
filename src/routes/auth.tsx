@@ -14,9 +14,9 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "تسجيل الدخول | المنظومة المحاسبية" },
+      { title: "تسجيل الدخول | يوسف سوفت" },
       { name: "description", content: "الدخول إلى نظام المحاسبة وإدارة المشاريع متعدد الشركات." },
-      { property: "og:title", content: "تسجيل الدخول | المنظومة المحاسبية" },
+      { property: "og:title", content: "تسجيل الدخول | يوسف سوفت" },
       { property: "og:description", content: "الدخول إلى نظام المحاسبة وإدارة المشاريع." },
     ],
   }),

@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMe, moduleEnabled } from "@/lib/session";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { useApplyBrandColor, useBranding } from "@/lib/branding";
 import {
   BookOpen,
   Building2,
@@ -55,6 +56,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const brand = useBranding();
+  useApplyBrandColor(brand.data?.primary_color);
 
   async function signOut() {
     await queryClient.cancelQueries();
@@ -116,7 +119,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen bg-background">
       <aside className="no-print sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex">
         <div className="border-b border-sidebar-border px-5 py-4">
-          <div className="text-lg font-bold">{t("المنظومة المحاسبية")}</div>
+          <div className="flex items-center gap-2">
+            {brand.data?.logo_url && (
+              <img src={brand.data.logo_url} alt="" className="size-9 rounded bg-white object-contain p-0.5" />
+            )}
+            <div className="text-lg font-bold">{t("يوسف سوفت")}</div>
+          </div>
           <div className="mt-1 text-xs text-sidebar-foreground/70">
             {me?.isSuperAdmin ? t("مالك النظام") : (me?.tenantName ?? "—")}
           </div>
@@ -162,7 +170,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="no-print flex items-center justify-between border-b bg-card px-5 py-3 md:hidden">
-          <span className="font-bold text-primary">{t("المنظومة المحاسبية")}</span>
+          <span className="font-bold text-primary">{t("يوسف سوفت")}</span>
           <div className="flex items-center gap-3">
           <button
             onClick={() => setLang(lang === "ar" ? "en" : "ar")}
