@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Trash2, CheckCircle2, RotateCcw } from "lucide-react";
+import { Plus, Trash2, CheckCircle2, RotateCcw, Pencil, Printer } from "lucide-react";
+import { printDocument } from "@/lib/print";
+import { useBranding } from "@/lib/branding";
 import {
   DataFilters,
   applyFilters,
@@ -52,6 +54,8 @@ function DocumentsPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyDoc);
+  const [editing, setEditing] = useState<{ id: string; status: string } | null>(null);
+  const brand = useBranding();
   const [lines, setLines] = useState<Line[]>([{ product_id: "", qty: "1", unit_price: "0" }]);
   const [filters, setFilters] = useDataFilters();
   const range = resolveRange(filters);
@@ -107,13 +111,29 @@ function DocumentsPage() {
         partner_id: form.partner_id || null,
         warehouse_id: form.warehouse_id || null,
         to_warehouse_id: form.to_warehouse_id || null,
-        project_id: form.project_id || null,
+        project_id: form.doc_type === "sale" || form.doc_type === "purchase" ? null : form.project_id || null,
         account_id: form.account_id || null,
         amount: meta.lines ? 0 : Number(form.amount) || 0,
         notes: form.notes || null,
       };
-      const { data, error } = await db.from("documents").insert(payload).select().single();
-      if (error) throw error;
+      let docId: string;
+      if (editing) {
+        if (editing.status === "posted") {
+          const { error: uErr } = await db.rpc("unpost_document", { _id: editing.id });
+          if (uErr) throw uErr;
+        }
+        const { tenant_id: _t, ...upd } = payload;
+        const { error } = await db.from("documents").update(upd).eq("id", editing.id);
+        if (error) throw error;
+        const { error: dErr } = await db.from("document_lines").delete().eq("document_id", editing.id);
+        if (dErr) throw dErr;
+        docId = editing.id;
+      } else {
+        const { data, error } = await db.from("documents").insert(payload).select().single();
+        if (error) throw error;
+        docId = data.id;
+      }
+      const data = { id: docId };
       if (meta.lines) {
         const rows = lines
           .filter((l) => l.product_id && Number(l.qty) > 0)
@@ -128,9 +148,14 @@ function DocumentsPage() {
         const { error: lErr } = await db.from("document_lines").insert(rows);
         if (lErr) throw lErr;
       }
+      if (editing?.status === "posted") {
+        const { error: pErr } = await db.rpc("post_document", { _id: docId });
+        if (pErr) throw pErr;
+      }
     },
     onSuccess: () => {
-      toast.success("تم حفظ المستند كمسودة");
+      toast.success(editing ? "تم حفظ التعديلات" : "تم حفظ المستند كمسودة");
+      setEditing(null);
       setOpen(false);
       setForm(emptyDoc);
       setLines([{ product_id: "", qty: "1", unit_price: "0" }]);
@@ -174,6 +199,78 @@ function DocumentsPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async function loadLines(id: string): Promise<any[]> {
+    const { data, error } = await db.from("document_lines").select("*, products(name, unit)").eq("document_id", id);
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async function startEdit(d: any) {
+    try {
+      const ls = await loadLines(d.id);
+      setForm({
+        doc_type: d.doc_type,
+        doc_date: d.doc_date,
+        currency: d.currency ?? "USD",
+        exchange_rate: String(d.exchange_rate ?? 1),
+        partner_id: d.partner_id ?? "",
+        warehouse_id: d.warehouse_id ?? "",
+        to_warehouse_id: d.to_warehouse_id ?? "",
+        project_id: d.project_id ?? "",
+        account_id: d.account_id ?? "",
+        amount: String(d.amount ?? 0),
+        notes: d.notes ?? "",
+      });
+      setLines(
+        ls.length
+          ? ls.map((l) => ({ product_id: l.product_id, qty: String(l.qty), unit_price: String(l.unit_price) }))
+          : [{ product_id: "", qty: "1", unit_price: "0" }],
+      );
+      setEditing({ id: d.id, status: d.status });
+      setOpen(true);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async function printDoc(d: any) {
+    try {
+      const t = DOC_TYPES.find((x) => x.value === d.doc_type);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const nameOf = (list: any[] | undefined, id: string | null) => (list ?? []).find((x: any) => x.id === id)?.name ?? "—";
+      const meta: [string, string][] = [
+        ["رقم المستند", String(d.doc_no ?? "—")],
+        ["التاريخ", fmtDate(d.doc_date)],
+        ["العملة", d.currency === "SYP" ? "ليرة سورية" : "دولار أمريكي"],
+      ];
+      if (d.partner_id) meta.push(["الزبون / المورد", nameOf(ref.data?.partners, d.partner_id)]);
+      if (d.warehouse_id) meta.push(["المستودع", nameOf(ref.data?.warehouses, d.warehouse_id)]);
+      if (d.to_warehouse_id) meta.push(["مستودع الوجهة", nameOf(ref.data?.warehouses, d.to_warehouse_id)]);
+      if (d.project_id) meta.push(["المشروع", nameOf(ref.data?.projects, d.project_id)]);
+      meta.push(["الحالة", d.status === "posted" ? "مرحّل" : "مسودة"]);
+      const hasLines = t?.lines;
+      const ls = hasLines ? await loadLines(d.id) : [];
+      const sum = ls.reduce((s, l) => s + Number(l.qty) * Number(l.unit_price), 0);
+      printDocument({
+        title: t?.label ?? "مستند",
+        company: me?.tenantName,
+        logo: brand.data?.logo_url,
+        meta,
+        columns: hasLines ? ["#", "المادة", "الوحدة", "الكمية", "السعر", "الإجمالي"] : ["البيان", "المبلغ"],
+        rows: hasLines
+          ? ls.map((l, i) => [i + 1, l.products?.name ?? "", l.products?.unit ?? "", fmtNum(l.qty), fmtNum(l.unit_price), fmtNum(Number(l.qty) * Number(l.unit_price))])
+          : [[d.notes || t?.label || "", fmtNum(d.amount)]],
+        footer: [["الإجمالي", `${fmtNum(hasLines ? sum : d.amount)} ${d.currency ?? ""}`]],
+        notes: hasLines ? d.notes : null,
+      });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
 
   const facets: FacetConfig[] = [
     { key: "doc_type", label: "نوع المستند", options: DOC_TYPES.map((d) => ({ value: d.value, label: d.label })) },
@@ -224,7 +321,14 @@ function DocumentsPage() {
         subtitle="فواتير البيع والشراء، سندات القبض والدفع، وحركات المستودعات مع ترحيل محاسبي تلقائي"
         actions={
           can(me, "documents", "create") ? (
-            <Button onClick={() => setOpen(true)}>
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setForm(emptyDoc);
+                setLines([{ product_id: "", qty: "1", unit_price: "0" }]);
+                setOpen(true);
+              }}
+            >
               <Plus className="size-4" />
               مستند جديد
             </Button>
@@ -275,6 +379,18 @@ function DocumentsPage() {
                 </td>
                 <td className="px-3 py-2">
                   <div className="flex justify-center gap-2">
+                    <Button size="sm" variant="outline" title="طباعة" onClick={() => printDoc(d)}>
+                      <Printer className="size-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      title="تعديل"
+                      disabled={!can(me, "documents", "edit")}
+                      onClick={() => startEdit(d)}
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
                     {d.status === "draft" ? (
                       <>
                         <Button
@@ -321,10 +437,10 @@ function DocumentsPage() {
         </table>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>مستند جديد</DialogTitle>
+            <DialogTitle>{editing ? "تعديل المستند" : "مستند جديد"}</DialogTitle>
           </DialogHeader>
 
           <div className="grid gap-3 sm:grid-cols-3">
@@ -427,6 +543,7 @@ function DocumentsPage() {
                 </select>
               </div>
             )}
+            {form.doc_type !== "sale" && form.doc_type !== "purchase" && (
             <div className="space-y-1">
               <Label>المشروع {form.doc_type === "stock_out" ? "" : "(اختياري)"}</Label>
               <select
@@ -443,6 +560,7 @@ function DocumentsPage() {
                 ))}
               </select>
             </div>
+            )}
             {(form.doc_type === "receipt" ||
               form.doc_type === "payment" ||
               form.doc_type === "stock_in") && (
@@ -582,7 +700,7 @@ function DocumentsPage() {
 
           <DialogFooter>
             <Button onClick={() => create.mutate()} disabled={create.isPending}>
-              {create.isPending ? "جارٍ الحفظ..." : "حفظ كمسودة"}
+              {create.isPending ? "جارٍ الحفظ..." : editing ? (editing.status === "posted" ? "حفظ وإعادة الترحيل" : "حفظ التعديلات") : "حفظ كمسودة"}
             </Button>
           </DialogFooter>
         </DialogContent>
