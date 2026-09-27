@@ -85,6 +85,13 @@
       "when": 1790510849889,
       "tag": "0011_restore_currency_and_fix_project_posting",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790511863834,
+      "tag": "0012_auditor_notifications_company_admin",
+      "breakpoints": true
     }
   ]
 }
