@@ -4,13 +4,13 @@ import { BookOpen, Building2, HardHat, ShieldCheck, Warehouse } from "lucide-rea
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "المنظومة المحاسبية وإدارة المشاريع" },
+      { title: "يوسف سوفت — المحاسبة وإدارة المشاريع" },
       {
         name: "description",
         content:
           "نظام محاسبي عربي متكامل متعدد الشركات: شجرة حسابات، يومية عامة، مخازن، مشاريع وتعهدات، وتقارير مالية فورية.",
       },
-      { property: "og:title", content: "المنظومة المحاسبية وإدارة المشاريع" },
+      { property: "og:title", content: "يوسف سوفت — المحاسبة وإدارة المشاريع" },
       {
         property: "og:description",
         content: "إدارة شركات متعددة، محاسبة دقيقة بالدولار والليرة السورية، مخازن ومشاريع وتقارير.",
@@ -34,7 +34,7 @@ function Landing() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2 font-bold text-primary">
             <ShieldCheck className="size-6" />
-            <span>المنظومة المحاسبية</span>
+            <span>يوسف سوفت</span>
           </div>
           <Link
             to="/auth"

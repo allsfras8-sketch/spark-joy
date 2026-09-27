@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/ledgers")({
   }),
   head: () => ({
     meta: [
-      { title: "دفاتر الأستاذ والكشوف | المنظومة المحاسبية" },
+      { title: "دفاتر الأستاذ والكشوف | يوسف سوفت" },
       {
         name: "description",
         content: "أستاذ المواد والمستودعات وكشوف الزبائن والموردين وأستاذ الحسابات مع فلترة تاريخية وطباعة وتصدير.",
@@ -72,7 +72,7 @@ function LedgerTable({
       </div>
 
       <div className="mb-5 border-b pb-4 text-center">
-        <h1 className="text-lg font-bold">{me?.tenantName ?? t("المنظومة المحاسبية")}</h1>
+        <h1 className="text-lg font-bold">{me?.tenantName ?? t("يوسف سوفت")}</h1>
         <h2 className="mt-1 font-semibold">{title}</h2>
         {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
       </div>

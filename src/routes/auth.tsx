@@ -14,9 +14,9 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "تسجيل الدخول | المنظومة المحاسبية" },
+      { title: "تسجيل الدخول | يوسف سوفت" },
       { name: "description", content: "الدخول إلى نظام المحاسبة وإدارة المشاريع متعدد الشركات." },
-      { property: "og:title", content: "تسجيل الدخول | المنظومة المحاسبية" },
+      { property: "og:title", content: "تسجيل الدخول | يوسف سوفت" },
       { property: "og:description", content: "الدخول إلى نظام المحاسبة وإدارة المشاريع." },
     ],
   }),
@@ -64,7 +64,7 @@ function AuthPage() {
       <div className="w-full max-w-md rounded-xl border bg-card p-8 shadow-sm">
         <div className="mb-6 flex items-center gap-2 text-primary">
           <ShieldCheck className="size-7" />
-          <h1 className="text-xl font-bold">المنظومة المحاسبية</h1>
+          <h1 className="text-xl font-bold">يوسف سوفت</h1>
         </div>
 
         <p className="mb-4 text-sm text-muted-foreground">

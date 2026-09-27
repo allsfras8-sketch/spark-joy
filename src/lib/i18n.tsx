@@ -9,7 +9,7 @@ export type Lang = "ar" | "en";
  */
 const EN: Record<string, string> = {
   // shell / nav
-  "المنظومة المحاسبية": "Accounting System",
+  "يوسف سوفت": "Accounting System",
   "لوحة المؤشرات": "Dashboard",
   "إدارة الشركات": "Companies",
   "شجرة الحسابات": "Chart of Accounts",

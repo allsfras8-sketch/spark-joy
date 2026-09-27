@@ -63,6 +63,11 @@ function ProjectDetail() {
     queryKey: ["project_expenses", projectId],
     queryFn: async () => (await scope(db.from("project_expenses").select("*"), me?.tenantId).eq("project_id", projectId)).data ?? [],
   });
+  const glLines = useQuery({
+    queryKey: ["project_gl", projectId],
+    queryFn: async () =>
+      (await scope(db.from("journal_lines").select("debit, credit, journal_entries(exchange_rate)"), me?.tenantId).eq("project_id", projectId)).data ?? [],
+  });
   const milestones = useQuery({
     queryKey: ["milestones", projectId],
     queryFn: async () => (await scope(db.from("project_milestones").select("*"), me?.tenantId).eq("project_id", projectId)).data ?? [],
@@ -87,7 +92,14 @@ function ProjectDetail() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const budget = (boq.data ?? []).reduce((s: number, b: any) => s + Number(b.qty) * Number(b.unit_price), 0);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const actual = (expenses.data ?? []).reduce((s: number, e: any) => s + Number(e.amount), 0);
+  const directExpenses = (expenses.data ?? []).reduce((s: number, e: any) => s + Number(e.amount), 0);
+  // Costs posted to the project through invoices, stock issues and journal entries (converted to USD)
+  const postedCost = (glLines.data ?? []).reduce(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (s: number, l: any) => s + Number(l.debit ?? 0) / (Number(l.journal_entries?.exchange_rate ?? 1) || 1),
+    0,
+  );
+  const actual = directExpenses + postedCost;
   const invoiced = (milestones.data ?? [])
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .filter((m: any) => m.invoiced)

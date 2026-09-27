@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Download, FileText, Plus, Printer, Trash2 } from "lucide-react";
+import { Download, FileText, Pencil, Plus, Printer, Trash2 } from "lucide-react";
 import {
   DataFilters,
   applyFilters,
@@ -51,6 +51,35 @@ function JournalPage() {
     exchange_rate: "1",
   });
   const [lines, setLines] = useState<LineDraft[]>([emptyLine(), emptyLine()]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async function startEdit(e: any) {
+    const { data, error } = await db.from("journal_lines").select("*").eq("entry_id", e.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setHead({
+      entry_date: e.entry_date,
+      description: e.description ?? "",
+      currency: e.currency ?? "USD",
+      exchange_rate: String(e.exchange_rate ?? 1),
+    });
+    setLines(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (data ?? []).map((l: any) => ({
+        account_id: l.account_id,
+        partner_id: l.partner_id ?? "",
+        project_id: l.project_id ?? "",
+        description: l.description ?? "",
+        debit: Number(l.debit) ? String(l.debit) : "",
+        credit: Number(l.credit) ? String(l.credit) : "",
+      })),
+    );
+    setEditingId(e.id);
+    setOpen(true);
+  }
 
   const [filters, setFilters] = useDataFilters();
   const range = resolveRange(filters);
@@ -94,6 +123,40 @@ function JournalPage() {
   const save = useMutation({
     mutationFn: async () => {
       if (!balanced) throw new Error("لا يمكن الحفظ: مجموع المدين لا يساوي مجموع الدائن");
+      if (editingId) {
+        const { error: u } = await db
+          .from("journal_entries")
+          .update({
+            entry_date: head.entry_date,
+            description: head.description,
+            currency: head.currency,
+            exchange_rate: Number(head.exchange_rate || 1),
+          })
+          .eq("id", editingId);
+        if (u) throw u;
+        const { data: oldLines } = await db.from("journal_lines").select("*").eq("entry_id", editingId);
+        const { error: d } = await db.from("journal_lines").delete().eq("entry_id", editingId);
+        if (d) throw d;
+        const newLines = lines
+          .filter((l) => l.account_id && (Number(l.debit) > 0 || Number(l.credit) > 0))
+          .map((l) => ({
+            tenant_id: me?.tenantId,
+            entry_id: editingId,
+            account_id: l.account_id,
+            partner_id: l.partner_id || null,
+            project_id: l.project_id || null,
+            description: l.description || null,
+            debit: Number(l.debit || 0),
+            credit: Number(l.credit || 0),
+          }));
+        const { error: i } = await db.from("journal_lines").insert(newLines);
+        if (i) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if (oldLines?.length) await db.from("journal_lines").insert(oldLines.map(({ id: _id, ...r }: any) => r));
+          throw i;
+        }
+        return;
+      }
       const { data: maxRow } = await db
         .from("journal_entries")
         .select("entry_no")
@@ -135,7 +198,8 @@ function JournalPage() {
       }
     },
     onSuccess: () => {
-      toast.success("تم ترحيل القيد بنجاح");
+      toast.success(editingId ? "تم حفظ تعديلات القيد" : "تم ترحيل القيد بنجاح");
+      setEditingId(null);
       setOpen(false);
       setLines([emptyLine(), emptyLine()]);
       setHead({ entry_date: today(), description: "", currency: "USD", exchange_rate: "1" });
@@ -221,7 +285,14 @@ function JournalPage() {
               طباعة
             </Button>
             {can(me, "journal", "create") && (
-              <Button onClick={() => setOpen(true)}>
+              <Button
+                onClick={() => {
+                  setEditingId(null);
+                  setLines([emptyLine(), emptyLine()]);
+                  setHead({ entry_date: today(), description: "", currency: "USD", exchange_rate: "1" });
+                  setOpen(true);
+                }}
+              >
                 <Plus className="size-4" />
                 قيد جديد
               </Button>
@@ -274,6 +345,16 @@ function JournalPage() {
                         <FileText className="size-4" />
                       </Link>
                     </Button>
+                    <Button asChild size="icon" variant="ghost" title="طباعة">
+                      <Link to="/journal/$entryId" params={{ entryId: e.id }} search={{ print: 1 }}>
+                        <Printer className="size-4" />
+                      </Link>
+                    </Button>
+                    {can(me, "journal", "edit") && !e.document_id && (
+                      <Button size="icon" variant="ghost" onClick={() => startEdit(e)} title="تعديل">
+                        <Pencil className="size-4" />
+                      </Button>
+                    )}
                     {can(me, "journal", "delete") && (
                       <Button size="icon" variant="ghost" onClick={() => del.mutate(e.id)} title="حذف">
                         <Trash2 className="size-4 text-destructive" />
@@ -287,10 +368,10 @@ function JournalPage() {
         </table>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditingId(null); }}>
         <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto" dir="rtl">
           <DialogHeader>
-            <DialogTitle>قيد يومية جديد</DialogTitle>
+            <DialogTitle>{editingId ? "تعديل قيد يومية" : "قيد يومية جديد"}</DialogTitle>
           </DialogHeader>
 
           <div className="grid gap-3 md:grid-cols-4">
