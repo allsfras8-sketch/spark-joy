@@ -1,0 +1,6 @@
+{"capabilities":[
+{"capability":"app code (ERP: companies, accounts, journal, invoices, stock, reports, i18n)","source":"github repo","outcome":"copied into project","status":"in_progress","next_action":"copy src, supabase, drizzle; install deps"},
+{"capability":"database schema","source":"supabase migrations (7 files)","outcome":"apply to Lovable Cloud","status":"pending","next_action":"enable Cloud + run migrations"},
+{"capability":"auth + admin-created users","source":"supabase auth + admin.functions.ts","outcome":"migrate to Lovable Cloud auth","status":"pending","next_action":"verify after Cloud enable"},
+{"capability":"existing records/users","source":"none attached","outcome":"pending","status":"pending","next_action":"request data export after preview"}
+]}
