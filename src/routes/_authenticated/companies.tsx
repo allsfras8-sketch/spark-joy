@@ -18,12 +18,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, UserPlus, KeyRound, Trash2 } from "lucide-react";
+import { Plus, UserPlus, KeyRound, Trash2, Download } from "lucide-react";
 import {
   createCompany,
   createUserAccount,
   setUserPassword,
   deleteUserAccount,
+  backupCompany,
+  deleteCompany,
 } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/companies")({ component: CompaniesPage });
@@ -66,8 +68,11 @@ function CompaniesPage() {
     email: "",
     password: "",
     isTenantAdmin: false,
+    isAuditor: false,
   });
 
+  const backupFn = useServerFn(backupCompany);
+  const deleteCompanyFn = useServerFn(deleteCompany);
   const createCompanyFn = useServerFn(createCompany);
   const createUserFn = useServerFn(createUserAccount);
   const setPasswordFn = useServerFn(setUserPassword);
@@ -114,7 +119,7 @@ function CompaniesPage() {
     onSuccess: () => {
       toast.success("تم إنشاء حساب المستخدم");
       setUserDialog(null);
-      setUserForm({ fullName: "", email: "", password: "", isTenantAdmin: false });
+      setUserForm({ fullName: "", email: "", password: "", isTenantAdmin: false, isAuditor: false });
       qc.invalidateQueries({ queryKey: ["all_profiles"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -158,6 +163,30 @@ function CompaniesPage() {
     onSuccess: () => {
       toast.success("تم الحفظ");
       qc.invalidateQueries({ queryKey: ["tenants"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const backup = useMutation({
+    mutationFn: async (t: { id: string; code: string | null; name: string }) => {
+      const json = await backupFn({ data: { tenantId: t.id } });
+      const blob = new Blob([json], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `backup-${t.code || t.name}-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    },
+    onSuccess: () => toast.success("تم تنزيل النسخة الاحتياطية"),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const removeCompany = useMutation({
+    mutationFn: async (tenantId: string) => deleteCompanyFn({ data: { tenantId } }),
+    onSuccess: () => {
+      toast.success("تم حذف الشركة وكل بياناتها");
+      qc.invalidateQueries({ queryKey: ["tenants"] });
+      qc.invalidateQueries({ queryKey: ["all_profiles"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -223,6 +252,25 @@ function CompaniesPage() {
                   >
                     <UserPlus className="size-4" />
                     مستخدم جديد
+                  </Button>
+                  <Button variant="outline" size="sm" disabled={backup.isPending} onClick={() => backup.mutate(t)}>
+                    <Download className="size-4" />
+                    نسخة احتياطية
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={removeCompany.isPending}
+                    onClick={() => {
+                      const typed = window.prompt(
+                        `سيتم حذف شركة "${t.name}" وكل بياناتها وحسابات مستخدميها نهائياً.\nيُنصح بأخذ نسخة احتياطية أولاً.\nاكتب اسم الشركة للتأكيد:`,
+                      );
+                      if (typed === t.name) removeCompany.mutate(t.id);
+                      else if (typed !== null) toast.error("الاسم غير مطابق، لم يتم الحذف");
+                    }}
+                  >
+                    <Trash2 className="size-4" />
+                    حذف الشركة
                   </Button>
                 </div>
               </div>
@@ -307,7 +355,7 @@ function CompaniesPage() {
                         <td className="border px-2 py-2" dir="ltr">
                           {u.email}
                         </td>
-                        <td className="border px-2 py-2 text-center">{u.is_tenant_admin ? "نعم" : "—"}</td>
+                        <td className="border px-2 py-2 text-center">{u.is_tenant_admin ? "نعم" : u.is_auditor ? "مدقق" : "—"}</td>
                         <td className="border px-2 py-2 text-center">
                           <Switch
                             checked={!!u.is_active}
@@ -516,6 +564,15 @@ function CompaniesPage() {
               />
               مدير الشركة (صلاحيات كاملة)
             </label>
+            {!userForm.isTenantAdmin && (
+              <label className="flex items-center gap-2 text-sm">
+                <Switch
+                  checked={userForm.isAuditor}
+                  onCheckedChange={(v) => setUserForm({ ...userForm, isAuditor: v })}
+                />
+                حساب مدقق
+              </label>
+            )}
           </div>
           <DialogFooter>
             <Button

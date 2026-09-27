@@ -127,6 +127,12 @@ export function NewUserDialog({
             </label>
           )}
           {!isAdmin && (
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox checked={isAuditor} onCheckedChange={(v) => setIsAuditor(!!v)} />
+              حساب مدقق (يستعرض كل شيء ويؤكد القيود، دون إضافة أو تعديل)
+            </label>
+          )}
+          {!isAdmin && !isAuditor && (
             <div className="overflow-x-auto">
               <table className="w-full border text-sm">
                 <thead className="bg-secondary">
