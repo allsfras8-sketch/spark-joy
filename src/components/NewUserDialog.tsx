@@ -48,6 +48,7 @@ export function NewUserDialog({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuditor, setIsAuditor] = useState(false);
   const [perms, setPerms] = useState<Record<string, Perm>>(emptyPerms);
 
   function toggle(m: string, k: ActionKey, v: boolean) {
@@ -76,6 +77,7 @@ export function NewUserDialog({
           email,
           password,
           isTenantAdmin: isAdmin,
+          isAuditor: !isAdmin && isAuditor,
           permissions: MODULES.map((m) => ({ module: m, ...(perms[m] ?? EMPTY) })),
         },
       });
@@ -125,6 +127,12 @@ export function NewUserDialog({
             </label>
           )}
           {!isAdmin && (
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox checked={isAuditor} onCheckedChange={(v) => setIsAuditor(!!v)} />
+              حساب مدقق (يستعرض كل شيء ويؤكد القيود، دون إضافة أو تعديل)
+            </label>
+          )}
+          {!isAdmin && !isAuditor && (
             <div className="overflow-x-auto">
               <table className="w-full border text-sm">
                 <thead className="bg-secondary">

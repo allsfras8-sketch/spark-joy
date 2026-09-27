@@ -282,6 +282,7 @@ export const createUserAccount = createServerFn({ method: "POST" })
       email: string;
       password: string;
       isTenantAdmin: boolean;
+      isAuditor?: boolean;
       permissions?: {
         module: string;
         can_view: boolean;
@@ -338,13 +339,17 @@ export const createUserAccount = createServerFn({ method: "POST" })
       full_name: data.fullName,
       tenant_id: data.tenantId,
       is_tenant_admin: data.isTenantAdmin,
+      is_auditor: !!data.isAuditor && !data.isTenantAdmin,
       is_active: true,
     });
     if (pErr) {
       await supabaseAdmin.auth.admin.deleteUser(created.user!.id);
       throw new Error(pErr.message);
     }
-    const rows = (data.permissions ?? [])
+    const perms = data.isAuditor
+      ? MODULES.map((m) => ({ module: m, can_view: true, can_create: false, can_edit: false, can_delete: false }))
+      : (data.permissions ?? []);
+    const rows = perms
       .filter((p) => MODULES.includes(p.module))
       .map((p) => ({
         tenant_id: data.tenantId,
@@ -411,5 +416,51 @@ export const deleteUserAccount = createServerFn({ method: "POST" })
     await supabaseAdmin.from("profiles").delete().eq("id", data.userId);
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
     if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+const BACKUP_TABLES = [
+  "tenants", "tenant_settings", "tenant_features", "profiles", "user_permissions", "accounts",
+  "warehouses", "products", "partners", "projects", "boq_items", "project_milestones",
+  "project_expenses", "banks", "cheques", "fixed_assets", "exchange_rates", "documents",
+  "document_lines", "journal_entries", "journal_lines", "stock_moves", "subscription_history",
+  "tenant_payments",
+];
+
+async function requireOwner(supabase: unknown, userId: string) {
+  const caller = await loadCaller(supabase, userId);
+  if (!caller.is_super_admin) throw new Error("هذه العملية لمالك النظام فقط");
+}
+
+/** Owner-only: full JSON backup of one company's data. */
+export const backupCompany = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { tenantId: string }) => d)
+  .handler(async ({ data, context }) => {
+    await requireOwner(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const out: Record<string, unknown[]> = {};
+    for (const t of BACKUP_TABLES) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const q = (supabaseAdmin as any).from(t).select("*");
+      const { data: rows, error } = await (t === "tenants" ? q.eq("id", data.tenantId) : q.eq("tenant_id", data.tenantId));
+      if (error) throw new Error(`${t}: ${error.message}`);
+      out[t] = rows ?? [];
+    }
+    return JSON.stringify({ app: "yousef-soft", version: 1, created_at: new Date().toISOString(), data: out });
+  });
+
+/** Owner-only: permanently deletes a company, all its data and its user accounts. */
+export const deleteCompany = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { tenantId: string }) => d)
+  .handler(async ({ data, context }) => {
+    await requireOwner(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: users } = await supabaseAdmin.from("profiles").select("id").eq("tenant_id", data.tenantId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabaseAdmin as any).rpc("purge_tenant", { _id: data.tenantId });
+    if (error) throw new Error(error.message);
+    for (const u of users ?? []) await supabaseAdmin.auth.admin.deleteUser(u.id);
     return { ok: true as const };
   });

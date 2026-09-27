@@ -532,6 +532,9 @@ export type Database = {
       }
       journal_entries: {
         Row: {
+          audited: boolean
+          audited_at: string | null
+          audited_by: string | null
           created_at: string
           created_by: string | null
           currency: Database["public"]["Enums"]["currency_code"]
@@ -545,6 +548,9 @@ export type Database = {
           tenant_id: string
         }
         Insert: {
+          audited?: boolean
+          audited_at?: string | null
+          audited_by?: string | null
           created_at?: string
           created_by?: string | null
           currency?: Database["public"]["Enums"]["currency_code"]
@@ -558,6 +564,9 @@ export type Database = {
           tenant_id: string
         }
         Update: {
+          audited?: boolean
+          audited_at?: string | null
+          audited_by?: string | null
           created_at?: string
           created_by?: string | null
           currency?: Database["public"]["Enums"]["currency_code"]
@@ -789,8 +798,10 @@ export type Database = {
           full_name: string
           id: string
           is_active: boolean
+          is_auditor: boolean
           is_super_admin: boolean
           is_tenant_admin: boolean
+          notif_seen_at: string
           tenant_id: string | null
         }
         Insert: {
@@ -799,8 +810,10 @@ export type Database = {
           full_name?: string
           id: string
           is_active?: boolean
+          is_auditor?: boolean
           is_super_admin?: boolean
           is_tenant_admin?: boolean
+          notif_seen_at?: string
           tenant_id?: string | null
         }
         Update: {
@@ -809,8 +822,10 @@ export type Database = {
           full_name?: string
           id?: string
           is_active?: boolean
+          is_auditor?: boolean
           is_super_admin?: boolean
           is_tenant_admin?: boolean
+          notif_seen_at?: string
           tenant_id?: string | null
         }
         Relationships: [
@@ -1444,10 +1459,26 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_auditor_or_admin: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       post_document: { Args: { _id: string }; Returns: string }
+      purge_tenant: { Args: { _id: string }; Returns: undefined }
+      set_entry_audited: {
+        Args: { _id: string; _ok: boolean }
+        Returns: undefined
+      }
       tenant_active: { Args: never; Returns: boolean }
       unpost_document: { Args: { _id: string }; Returns: undefined }
+      update_company_info: {
+        Args: {
+          _address: string
+          _code: string
+          _name: string
+          _notes: string
+          _phone: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       account_nature: "closing" | "balance_sheet" | "profit_loss"

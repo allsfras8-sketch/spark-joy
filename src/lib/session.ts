@@ -17,6 +17,9 @@ export type Me = {
   tenantId: string | null;
   tenantName: string | null;
   isSuperAdmin: boolean;
+  isTenantAdmin: boolean;
+  isAuditor: boolean;
+  notifSeenAt: string | null;
   perms: PermRow[];
   features: Record<string, boolean>;
   tenantLocked: boolean;
@@ -57,6 +60,9 @@ async function loadMe(): Promise<Me | null> {
     tenantId: profile?.tenant_id ?? null,
     tenantName: tenantRes.data?.name ?? null,
     isSuperAdmin: !!profile?.is_super_admin,
+    isTenantAdmin: !!profile?.is_tenant_admin,
+    isAuditor: !!profile?.is_auditor,
+    notifSeenAt: profile?.notif_seen_at ?? null,
     perms: permsRes.data ?? [],
     features,
     tenantLocked: !profile.is_super_admin && activeRes.data !== true,
