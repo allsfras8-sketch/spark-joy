@@ -342,7 +342,7 @@ function JournalPage() {
                       </Link>
                     </Button>
                     <Button asChild size="icon" variant="ghost" title="طباعة">
-                      <Link to="/journal/$entryId" params={{ entryId: e.id }} search={{ print: 1 } as never}>
+                      <Link to="/journal/$entryId" params={{ entryId: e.id }} search={{ print: 1 }}>
                         <Printer className="size-4" />
                       </Link>
                     </Button>

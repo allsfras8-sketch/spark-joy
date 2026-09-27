@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useBranding } from "@/lib/branding";
 import { db } from "@/lib/db";
 import { useMe } from "@/lib/session";
 import { printPage } from "@/lib/export";
@@ -7,11 +9,16 @@ import { fmtDate, fmtNum, CURRENCY_LABEL } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Printer } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/journal/$entryId")({ component: VoucherPage });
+export const Route = createFileRoute("/_authenticated/journal/$entryId")({
+  validateSearch: (s: Record<string, unknown>): { print?: number } => (s["print"] ? { print: Number(s["print"]) } : {}),
+  component: VoucherPage,
+});
 
 function VoucherPage() {
   const { entryId } = Route.useParams();
   const { data: me } = useMe();
+  const { print } = Route.useSearch();
+  const brand = useBranding();
 
   const entry = useQuery({
     queryKey: ["entry", entryId],
@@ -25,6 +32,13 @@ function VoucherPage() {
       return data;
     },
   });
+
+  useEffect(() => {
+    if (print && entry.data) {
+      const t = setTimeout(() => window.print(), 400);
+      return () => clearTimeout(t);
+    }
+  }, [print, entry.data]);
 
   if (entry.isLoading) return <p className="text-muted-foreground">جارٍ التحميل...</p>;
   if (!entry.data) return <p className="text-muted-foreground">القيد غير موجود</p>;
@@ -52,6 +66,7 @@ function VoucherPage() {
 
       <div className="print-area mx-auto max-w-3xl rounded-lg border bg-card p-8">
         <div className="mb-6 border-b pb-4 text-center">
+          {brand.data?.logo_url && <img src={brand.data.logo_url} alt="" className="mx-auto mb-2 max-h-16" />}
           <h1 className="text-xl font-bold">{me?.tenantName ?? "الشركة"}</h1>
           <h2 className="mt-1 text-lg font-semibold">سند قيد يومية</h2>
         </div>
