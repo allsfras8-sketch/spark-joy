@@ -64,6 +64,20 @@
       "when": 1790499645359,
       "tag": "0008_restore_soft_delete_guards_and_payments",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790510413845,
+      "tag": "0009_cleanup_leftover_types",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790510552630,
+      "tag": "0010_restore_enums_has_perm_and_policies",
+      "breakpoints": true
     }
   ]
 }
