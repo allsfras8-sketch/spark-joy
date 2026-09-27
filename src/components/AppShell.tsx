@@ -46,7 +46,7 @@ const NAV: NavItem[] = [
   { to: "/reports", label: "التقارير المالية", icon: Coins, module: "reports" },
   { to: "/ledgers", label: "دفاتر الأستاذ والكشوف", icon: LedgerIcon, module: "reports" },
   { to: "/users", label: "المستخدمون والصلاحيات", icon: Users, module: "users" },
-  { to: "/settings", label: "إعدادات الربط المحاسبي", icon: Settings, module: "accounts" },
+  { to: "/settings", label: "إعدادات الحساب", icon: Settings, module: "accounts" },
   { to: "/audit", label: "سجل حركات المستخدمين", icon: ClipboardList, module: "audit" },
 ];
 
