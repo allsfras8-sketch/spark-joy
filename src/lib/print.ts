@@ -1,13 +1,13 @@
 // Opens a clean printable page (invoice / voucher) in a new window and prints it.
 export type PrintDoc = {
   title: string;
-  company?: string | null;
-  logo?: string | null;
+  company?: string | null | undefined;
+  logo?: string | null | undefined;
   meta: [string, string][];
   columns: string[];
   rows: (string | number)[][];
   footer?: [string, string][];
-  notes?: string | null;
+  notes?: string | null | undefined;
   signatures?: string[];
   dir?: "rtl" | "ltr";
 };

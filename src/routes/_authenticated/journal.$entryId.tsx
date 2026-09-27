@@ -38,6 +38,7 @@ function VoucherPage() {
       const t = setTimeout(() => window.print(), 400);
       return () => clearTimeout(t);
     }
+    return undefined;
   }, [print, entry.data]);
 
   if (entry.isLoading) return <p className="text-muted-foreground">جارٍ التحميل...</p>;

@@ -56,7 +56,10 @@ function JournalPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function startEdit(e: any) {
     const { data, error } = await db.from("journal_lines").select("*").eq("entry_id", e.id);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     setHead({
       entry_date: e.entry_date,
       description: e.description ?? "",
@@ -64,7 +67,8 @@ function JournalPage() {
       exchange_rate: String(e.exchange_rate ?? 1),
     });
     setLines(
-      (data ?? []).map((l) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (data ?? []).map((l: any) => ({
         account_id: l.account_id,
         partner_id: l.partner_id ?? "",
         project_id: l.project_id ?? "",
