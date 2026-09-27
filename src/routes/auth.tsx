@@ -64,7 +64,7 @@ function AuthPage() {
       <div className="w-full max-w-md rounded-xl border bg-card p-8 shadow-sm">
         <div className="mb-6 flex items-center gap-2 text-primary">
           <ShieldCheck className="size-7" />
-          <h1 className="text-xl font-bold">المنظومة المحاسبية</h1>
+          <h1 className="text-xl font-bold">يوسف سوفت</h1>
         </div>
 
         <p className="mb-4 text-sm text-muted-foreground">

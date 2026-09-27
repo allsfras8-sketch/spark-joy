@@ -34,7 +34,7 @@ function Landing() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2 font-bold text-primary">
             <ShieldCheck className="size-6" />
-            <span>المنظومة المحاسبية</span>
+            <span>يوسف سوفت</span>
           </div>
           <Link
             to="/auth"
